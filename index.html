@@ -344,12 +344,12 @@ function matches(heard,target){
 const $=s=>document.querySelector(s);const app=$("#app");
 let view="home", L=null, preview=false, homeMonth=null;
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-function ensurePrizes(){if(!Array.isArray(S.prizes)||S.prizes.length!==12)S.prizes=DEF_PRIZES.map((t,i)=>({t,surprise:DEF_SURPRISE[i],given:false}));
+function ensurePrizes(){if(!Array.isArray(S.prizes)||S.prizes.length<12)S.prizes=DEF_PRIZES.map((t,i)=>({t,surprise:DEF_SURPRISE[i],given:false}));const need=(Math.floor(MONTHS_OPEN/12)+1)*12;while(S.prizes.length<need)S.prizes.push({t:"Prêmio a definir pelo papai",surprise:true,given:false});
   if(S.prizeVer!==2){S.prizes.forEach((p,i)=>{if(p.t===OLD_PRIZES[i]){p.t=DEF_PRIZES[i];p.surprise=DEF_SURPRISE[i]}});S.prizeVer=2;save()}}
-function modProg(){const d=sched().done.size;const cur=Math.min(11,Math.floor(d/PER_MODULE));return {d,cur,inMod:d-cur*PER_MODULE,left:PER_MODULE-(d-cur*PER_MODULE)}}
+function modProg(){const d=sched().done.size;const cur=Math.floor(d/PER_MODULE);return {d,cur,inMod:d-cur*PER_MODULE,left:PER_MODULE-(d-cur*PER_MODULE)}}
 function prizeLabel(i,forKid){const p=S.prizes[i];return forKid&&p.surprise?"Surpresa!":p.t}
 function mapTeaser(){const m=modProg();const pct=Math.round(m.inMod/PER_MODULE*100);
-  return `<button class="teaser" id="map"><span class="chest">🎁</span><span class="t"><b>Próximo baú: ${esc(prizeLabel(m.cur,true))}</b><span>${MODULES[m.cur][0]} ${esc(MODULES[m.cur][1])} · faltam ${m.left} aulas</span><span class="bar"><i style="width:${pct}%"></i></span></span><span style="font-size:22px">🗺️</span></button>`+parade()}
+  return `<button class="teaser" id="map"><span class="chest">🎁</span><span class="t"><b>Próximo baú: ${esc(prizeLabel(m.cur,true))}</b><span>${MODULES[m.cur%12][0]} ${esc(MODULES[m.cur%12][1])}${m.cur>=12?" · Temporada "+(Math.floor(m.cur/12)+1):""} · faltam ${m.left} aulas</span><span class="bar"><i style="width:${pct}%"></i></span></span><span style="font-size:22px">🗺️</span></button>`+parade()}
 /* ---------- PIXEL BUDDIES (original characters) ---------- */
 const SPR={
  bot:["...yy...","...kk...",".BBBBBB.",".BkBBkB.",".BBBBBB.",".BmmmmB.","..GGGG..","G.GGGG.G","..GGGG..","..k..k.."],
@@ -378,23 +378,23 @@ function walker(b,pos,dur,delay,rev){return `<button class="walker${rev?" rev":"
 function parade(){return `<div class="parade">${BUD.slice(0,5).map((b,i)=>walker(b,`bottom:14px;--x:${10+i*18}%`,14+i*4,-(i*5+1),i%2)).join("")}<div class="ground"></div></div>`}
 function bindWalkers(){document.querySelectorAll(".walker").forEach(w=>w.onclick=e=>{e.stopPropagation();w.querySelector(".say").textContent=w.dataset.w;w.classList.remove("jump");void w.offsetWidth;w.classList.add("jump");say(w.dataset.w);clearTimeout(w._t);w._t=setTimeout(()=>w.classList.remove("jump"),1600)})}
 function renderMap(){
-  const m=modProg();const N=12,RH=170,H=N*RH+40;
+  const m=modProg();const N=12,RH=170,H=N*RH+40;const SEA=Math.floor(m.cur/12),LC=m.cur%12;
   const pts=MODULES.map((_,i)=>[i%2?70:30,100+i*RH]);
   let d=`M${pts[0][0]} ${pts[0][1]}`;for(let i=1;i<N;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i];const my=(y0+y1)/2;d+=` C${x0} ${my} ${x1} ${my} ${x1} ${y1}`}
-  const cutY=pts[m.cur][1];
+  const cutY=pts[LC][1];
   const TOPS=["#5BC236","#8BC34A","#4DB6AC","#FFB74D","#66BB6A","#2E7D32","#B0BEC5","#ECEFF1","#7E57C2","#90A4AE","#29B6F6","#FFD54F"];
   const clouds=Array.from({length:9},(_,i)=>`<div class="cloud" style="top:${30+Math.round(i*RH*1.3)}px;animation-duration:${40+(i*7)%25}s;animation-delay:-${i*9}s"></div>`).join("");
   const walk=Array.from({length:12},(_,i)=>walker(BUD[i%BUD.length],`top:${60+Math.round(i*(H-160)/11)+(i%2?55:0)}px;--x:${(i*37)%90}%`,18+(i*7)%14,-(i*4.3).toFixed(1),i%2)).join("");
-  app.innerHTML=`<div class="top"><div class="brand"><div class="logo">🗺️</div><div><h1 class="pixel">Mundo dos Prêmios</h1><small>Toque nos bonequinhos: eles falam inglês!</small></div></div><button class="btn alt" id="back" style="font-size:16px;padding:10px 14px">Voltar</button></div>
+  app.innerHTML=`<div class="top"><div class="brand"><div class="logo">🗺️</div><div><h1 class="pixel">Mundo dos Prêmios${SEA?" · T"+(SEA+1):""}</h1><small>Toque nos bonequinhos: eles falam inglês!</small></div></div><button class="btn alt" id="back" style="font-size:16px;padding:10px 14px">Voltar</button></div>
   ${mapTeaser()}
   <div class="map" style="height:${H}px">${clouds}<svg viewBox="0 0 100 ${H}" preserveAspectRatio="none" aria-hidden="true">
    <path d="${d}" fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="square" vector-effect="non-scaling-stroke" opacity=".6"/>
    <path d="${d}" fill="none" stroke="#8D5A32" stroke-width="7" stroke-dasharray="7 7" vector-effect="non-scaling-stroke"/>
    <clipPath id="walked"><rect x="0" y="0" width="100" height="${cutY}"/></clipPath>
    <path d="${d}" clip-path="url(#walked)" fill="none" stroke="#FFD23F" stroke-width="8" stroke-dasharray="7 3" vector-effect="non-scaling-stroke"/></svg>
-   ${MODULES.map((mo,i)=>{const st=i<m.cur?"done":i===m.cur?"cur":"lock";
-     const wk=i===m.cur?`<span class="weeks">${[1,2,3,4].map(k=>`<i class="${m.inMod>=k*7?"on":""}"></i>`).join("")}</span>`:"";
-     return `<div class="node ${st}" style="left:${pts[i][0]}%;top:${pts[i][1]}px"><div class="isle-wrap"><div class="sign">${i<m.cur?"✅":mo[0]}</div><div class="plat" style="--top:${TOPS[i]}"></div>${i===m.cur?`<div class="me"><span class="tag">VOCÊ</span><span class="hop">${spr(ME,4)}</span></div>`:""}</div><b class="pixel">Mês ${i+1} · ${esc(mo[1])}</b>${wk}<span class="prize">${spr(CHEST,2)} ${i<m.cur?"Ganhou: ":""}${esc(prizeLabel(i,i>=m.cur))}</span></div>`}).join("")}
+   ${MODULES.map((mo,i)=>{const gi=SEA*12+i;const st=gi<m.cur?"done":gi===m.cur?"cur":"lock";
+     const wk=gi===m.cur?`<span class="weeks">${[1,2,3,4].map(k=>`<i class="${m.inMod>=k*7?"on":""}"></i>`).join("")}</span>`:"";
+     return `<div class="node ${st}" style="left:${pts[i][0]}%;top:${pts[i][1]}px"><div class="isle-wrap"><div class="sign">${gi<m.cur?"✅":mo[0]}</div><div class="plat" style="--top:${TOPS[i]}"></div>${gi===m.cur?`<div class="me"><span class="tag">VOCÊ</span><span class="hop">${spr(ME,4)}</span></div>`:""}</div><b class="pixel">Mês ${gi+1} · ${esc(mo[1])}</b>${wk}<span class="prize">${spr(CHEST,2)} ${gi<m.cur?"Ganhou: ":""}${esc(prizeLabel(gi,gi>=m.cur))}</span></div>`}).join("")}
    ${walk}
   </div>`;
   $("#back").onclick=()=>{view="home";render()};$("#map").onclick=()=>{};bindWalkers();
@@ -435,7 +435,7 @@ function renderHome(){
   <div class="stats"><span class="pill">🔥 ${st} dia${st===1?"":"s"} seguido${st===1?"":"s"}</span><span class="pill">⭐ ${totalStars()} estrelas</span><span class="pill">📚 ${sc.done.size}/${LESSONS.length} aulas</span></div>
   <div class="hero"><span class="mission pixel">⭐ MISSÃO DO DIA</span>${hero}</div>
   ${mapTeaser()}
-  <div class="stats">${Array.from({length:MONTHS_OPEN},(_,n)=>n+1).map(n=>`<button class="pill${n===cm?" cur":""}" data-m="${n}">${MODULES[n-1][0]} Mês ${n}</button>`).join("")}</div>
+  <div class="stats">${Array.from({length:MONTHS_OPEN},(_,n)=>n+1).map(n=>`<button class="pill${n===cm?" cur":""}" data-m="${n}">${MODULES[(n-1)%12][0]} Mês ${n}</button>`).join("")}</div>
   ${[1,2,3,4].map(x=>(cm-1)*4+x).map(wn=>`<div class="sec-label">🎮 Mês ${cm} · Semana ${(wn-1)%4+1}${wn===wk?" · você está aqui":""}</div>
   <div class="trail">${LESSONS.filter(l=>weekOf(l.id)===wn).map(l=>{const i=l.id-1;const lgs=S.log.filter(x=>x.lesson===l.id);const lg=lgs.length?lgs.reduce((a,b)=>b.stars>a.stars?b:a):null;const isNext=sc.next&&sc.next.id===l.id;
     const cls=lg?"done":(isNext?"today":"");
@@ -725,7 +725,7 @@ function renderReport(){
     <div class="chips">${LESSONS.map(l=>`<button class="pill" data-p="${l.id}">${l.icon} ${esc(l.title)}</button>`).join("")}</div>
   </div>
   <div class="card"><h3>Trilha de 12 meses</h3>
-    ${ROADMAP.map((m,i)=>`<div class="month ${i===curMonth?"cur":""}"><b>${m[0]}</b><span>${esc(m[1])}${i===curMonth?" · <b>agora</b>":""}${i>=MONTHS_OPEN?" · em breve":" · liberado"}</span></div>`).join("")}
+    ${ROADMAP.concat(window.ROADMAP_EXTRA||[]).map((m,i)=>`<div class="month ${i===curMonth?"cur":""}"><b>${m[0]}</b><span>${esc(m[1])}${i===curMonth?" · <b>agora</b>":""}${i>=MONTHS_OPEN?" · em breve":" · liberado"}</span></div>`).join("")}
     <div class="note">O conteúdo dos próximos meses é liberado aos poucos, conforme o desempenho dele.</div>
   </div>
   <div class="card"><h3>Transferir progresso</h3><div class="note">Leva o progresso do Lorenzo de uma versão do app para outra. Na versão antiga: Exportar. Na versão nova: cole o código e toque em Importar.</div>

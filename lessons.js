@@ -92,4 +92,6 @@ M2.forEach((m,i)=>LESSONS.push({id:29+i,title:m[0],pt:m[1],icon:m[2],review:!m[3
 */
 function addMonth(n,rows){rows.forEach((m,i)=>LESSONS.push({id:(n-1)*28+1+i,title:m[0],pt:m[1],icon:m[2],review:!m[3],words:m[3]?m[3].split(";").map(x=>x.split("|")):null,frame:m[5]||null,talk:{q:m[4][0],qpt:m[4][1],opts:m[4][2],a:0}}))}
 var MONTHS_OPEN=2;
+/* Trilha depois do Mês 12 (Temporada 2 em diante): ["Mês 13","tema"], ... */
+var ROADMAP_EXTRA=[];
 /* @@NOVOS_MESES@@ */

@@ -63,8 +63,9 @@ else:
 
 premios = S.get("prizes") or []
 premio = premios[N - 1]["t"] if N - 1 < len(premios) and isinstance(premios[N - 1], dict) else (premios[N - 1] if N - 1 < len(premios) else "Prêmio do mês")
-ico, mod = MODULOS[N - 1] if N <= 12 else ("⭐", "Mês extra")
-prox = MODULOS[N] if N < 12 else ("🎉", "Fim da trilha")
+ico, mod = MODULOS[(N - 1) % 12]
+if N > 12: mod += f" · Temporada {(N - 1) // 12 + 1}"
+prox = MODULOS[N % 12]
 
 # leitura para os pais (2 pontos, gerados pelos números)
 obs = []
