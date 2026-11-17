@@ -291,6 +291,7 @@ function save(){
   try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
   pushSync();
 }
+try{const m=location.hash.match(/^#cfg=(.+)$/);if(m){const c=JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1])))));if(c&&c.url)localStorage.setItem(SYNC_KEY,JSON.stringify({url:c.url,key:c.key||""}));history.replaceState(null,"",location.pathname)}}catch(e){}
 setTimeout(pullSync,800);
 /* ---------- SCHEDULE: free mode — whole month open, in order, no daily limit ---------- */
 function sched(){
